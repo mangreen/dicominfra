@@ -1,0 +1,10 @@
+{
+  "contract_version": "0.1",
+  "request_id": "0b8f3c1e-6d52-4a8e-9a53-1c2f6f1d7a01",
+  "status": "succeeded",
+  "model": { "name": "fake-model", "version": "0.0.1" },
+  "measurements": [
+    { "name": "lesion_diameter", "value": "12.5", "unit": "mm", "confidence": 0.93 }
+  ],
+  "completed_at": "2026-11-23T08:02:30Z"
+}

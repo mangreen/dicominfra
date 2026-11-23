@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://dicominfra.invalid/contracts/inference-v0/request.schema.json",
+  "title": "推論請求 v0.1（草案，待 DS 團隊審閱）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "request_id", "tenant_id", "study_id", "modality", "inputs", "submitted_at"],
+  "properties": {
+    "contract_version": { "const": "0.1" },
+    "request_id": {
+      "description": "冪等鍵。同一個 request_id 重複送出，平台必須回傳同一個結果，不得重複執行或重複計費。",
+      "type": "string",
+      "format": "uuid"
+    },
+    "tenant_id": { "description": "不透明的租戶識別碼，供用量計費歸屬；不含任何病患資訊。", "type": "string", "format": "uuid" },
+    "study_id": { "description": "本服務內部的檢查識別碼，不是 DICOM Study Instance UID。", "type": "string", "format": "uuid" },
+    "modality": { "description": "DICOM 模態代碼，例如 CT、MR、US。", "type": "string", "pattern": "^[A-Z]{2,4}$" },
+    "inputs": {
+      "description": "已去識別化的影像物件參照。",
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["object_uri", "sha256", "size_bytes"],
+        "properties": {
+          "object_uri": { "type": "string", "format": "uri" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "size_bytes": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "submitted_at": { "type": "string", "format": "date-time" }
+  }
+}

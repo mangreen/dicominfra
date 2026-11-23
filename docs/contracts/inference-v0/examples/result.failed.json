@@ -1,0 +1,8 @@
+{
+  "contract_version": "0.1",
+  "request_id": "0b8f3c1e-6d52-4a8e-9a53-1c2f6f1d7a01",
+  "status": "failed",
+  "model": { "name": "fake-model", "version": "0.0.1" },
+  "error": { "code": "INPUT_UNSUPPORTED", "message": "不支援的影像格式", "retryable": false },
+  "completed_at": "2026-11-23T08:00:20Z"
+}

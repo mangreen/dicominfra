@@ -1,0 +1,15 @@
+{
+  "contract_version": "0.1",
+  "request_id": "0b8f3c1e-6d52-4a8e-9a53-1c2f6f1d7a01",
+  "tenant_id": "5e2a7c64-3f1b-4d8a-8c55-9b0d2e4f6a10",
+  "study_id": "a1d4e9f2-7b36-4c0e-bd21-3f8a5c7e9d42",
+  "modality": "CT",
+  "inputs": [
+    {
+      "object_uri": "gs://example-deid/tenant-a/study-1/0001.dcm",
+      "sha256": "9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08",
+      "size_bytes": 524288
+    }
+  ],
+  "submitted_at": "2026-11-23T08:00:00Z"
+}
