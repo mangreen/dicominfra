@@ -1,3 +1,9 @@
+# 自動載入 .env（若存在），讓 make test-int 取得 TEST_DATABASE_URL、TEST_AMQP_URL
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
 .PHONY: sync fmt lint typecheck test test-int check up down audit
 
 sync:

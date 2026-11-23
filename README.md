@@ -19,10 +19,11 @@ Agent 為**獨立專案**，只透過 MCP 使用本服務（ADR 0004）。
 cp .env.example .env     # 僅限本機的範例值
 make up                  # 啟動真實的 Postgres 與 RabbitMQ
 uv sync
-set -a; source .env; set +a   # 或自行匯出 TEST_DATABASE_URL、TEST_AMQP_URL
 make check               # lint + 型別 + 單元／契約測試
 make test-int            # 整合測試（需要 make up）
 ```
+
+`make` 會自動載入 `.env`；不透過 make 執行 pytest 時，請自行匯出 `TEST_DATABASE_URL`、`TEST_AMQP_URL`。
 
 沒有 Docker 的環境，只要自行提供 Postgres 16 與 RabbitMQ 並設定 `TEST_DATABASE_URL`、`TEST_AMQP_URL` 即可。
 
