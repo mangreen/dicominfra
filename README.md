@@ -37,6 +37,7 @@ tests/integration/     真實基礎設施測試
 docs/adr/              架構決策記錄
 docs/contracts/        與 DS 團隊的推論契約（草案）
 docs/architecture.md   架構與流程圖（Mermaid）
+docs/assumptions.md    假設登記表（PoC 的簡單假設與替換點）
 ```
 
 ## 里程碑
@@ -51,5 +52,14 @@ docs/architecture.md   架構與流程圖（Mermaid）
 | M5a | MCP server | 未開始 |
 | M5b | 獨立 Agent 專案 | 未開始 |
 | M6 | 可觀測性與端到端展示 | 未開始 |
+
+## Monorepo 規劃（ADR 0004）
+
+M5a、M5b 動工時才會建立，現在只定邊界：
+
+```
+mcp_server/   MCP 薄轉接層，只呼叫公開 REST API
+agent/        獨立 Agent 專案，只透過 MCP 使用服務
+```
 
 規則見 [AGENTS.md](AGENTS.md)。
