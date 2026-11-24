@@ -35,14 +35,14 @@
 
 | ID | PoC 的假設 | 替換點 | 驗證 | 確認對象 | 狀態 |
 |---|---|---|---|---|---|
-| D1 | 物件儲存使用 S3 相容 API，本機以 MinIO 驗證；也可能改用 GCS 或 fake-gcs-server | `ObjectStore`；adapter 為設定 | Port 契約測試 | 團隊 | 待決定（M2 前） |
+| D1 | 物件儲存使用 S3 相容 API，本機與 CI 以 SeaweedFS 驗證（ADR 0010） | `ObjectStore`；adapter 與端點為設定 | Port 契約測試 | 團隊 | 已決定（2026-11-24） |
 | D2 | 去識別化採 DICOM PS3.15 基本設定檔的子集；規則是資料（設定檔），不是硬編碼 | `DeidProfile` 設定 | 規則測試 | 法規、DS | 假設 |
 
 ## Agent 與協定
 
 | ID | PoC 的假設 | 替換點 | 驗證 | 確認對象 | 狀態 |
 |---|---|---|---|---|---|
-| E1 | 使用官方 MCP SDK；MCP 規範已多次修訂（含傳輸行為），M5a 前確認 SDK 支援的協定版本 | MCP 轉接層薄薄包住工具註冊表 | 協定測試 | 團隊 | 待決定（M5a 前） |
+| E1 | 使用官方 `mcp` Python SDK v2（精確釘住版本），無狀態加 JSON 回應（ADR 0004） | MCP 轉接層薄薄包住工具註冊表 | 協定契約測試（M5a） | 團隊 | 已決定（2026-11-24） |
 | E2 | LLM 以兩個 adapter 涵蓋：Anthropic 原生與 OpenAI 相容 | `LLMProvider` | fake LLM 情境測試 | 團隊 | 設計 |
 
 ## 基礎設施

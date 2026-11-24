@@ -55,11 +55,12 @@ docs/assumptions.md    假設登記表（PoC 的簡單假設與替換點）
 
 ## Monorepo 規劃（ADR 0004）
 
-M5a、M5b 動工時才會建立，現在只定邊界：
+三個套件都放在 `src/` 下，M5a、M5b 動工時才會建立後兩個：
 
 ```
-mcp_server/   MCP 薄轉接層，只呼叫公開 REST API
-agent/        獨立 Agent 專案，只透過 MCP 使用服務
+src/dicominfra/         後端
+src/dicominfra_mcp/     MCP 薄轉接層，只呼叫公開 REST API
+src/dicominfra_agent/   獨立 Agent，只透過 MCP 使用服務
 ```
 
 規則見 [AGENTS.md](AGENTS.md)。
