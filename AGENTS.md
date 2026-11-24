@@ -31,6 +31,7 @@
 ## Git 與授權
 
 - 使用短生命週期分支加 PR；`main` 保持可建置、可測試。使用 Conventional Commits。
+- 每個里程碑結束時，在 `main` 打 tag `mN` 並保留凍結的 `milestone/mN` 分支（ADR 0006）；AI 在里程碑結束時提醒並附上指令。
 - Agent 不得自行 push、merge、release 或部署；commit 需取得使用者授權（M0 已授權建立 repo 結構與 commit）。
 - 目前交付方式：Agent 在沙箱產出 commit，以 `git bundle`／zip 交付，由使用者推送。
 
