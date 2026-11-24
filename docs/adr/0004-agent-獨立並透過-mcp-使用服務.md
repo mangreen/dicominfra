@@ -26,26 +26,41 @@
 6. **Agent loop 自行撰寫**，LLM 供應商以兩個 adapter 涵蓋（Anthropic 原生、OpenAI 相容），離線時降級為規則／狀態機模式。
 7. 工具輸出一律視為不可信資料，只回傳已去識別化的欄位，並限制長度。
 
-## Monorepo 配置（2026-11-24 增補）
+## Monorepo 配置（2026-11-24 增補，同日修訂）
 
-Agent 與服務放在同一個 repo，但邊界以規則維持：
+三個可獨立啟動的套件放在同一個 `src/` 底下，名稱加 `dicominfra_` 前綴，避免與第三方套件撞名：
 
 ```
-src/dicominfra/    後端（API、worker、relay、sweeper…）
-mcp_server/        MCP 薄轉接層（獨立進程）：只能使用公開 REST API 的 client 與契約，不得 import 後端的資料庫或業務模組
-agent/             獨立 Agent 專案：自己的 pyproject 與測試，只透過 MCP 與服務互動，不得 import dicominfra
-docs/contracts/    共用契約（推論契約、MCP 工具 schema、計費事件）
+src/dicominfra/          後端（API、worker、relay、sweeper…）
+src/dicominfra_mcp/      MCP 薄轉接層（獨立進程）
+src/dicominfra_agent/    獨立 Agent
+docs/contracts/          共用契約（推論契約、MCP 工具 schema、計費事件）
 ```
 
-- 以測試檢查 import 方向（M5a、M5b 動工時加入），違反就讓 CI 失敗。
-- CI 依路徑分工：`agent/**` 變動執行 agent 的檢查；`docs/contracts/**` 變動兩邊都執行。
-- 實際的 pyproject 與依賴鎖定方式（uv workspace 或各自鎖定）在 M5a、M5b 動工時決定；現在只定邊界規則。
+- **保留 `src/` 配置：** repo 根目錄還有 `tests/`、`docs/` 等非套件目錄；`src/` 讓所有可 import 的程式碼集中一處，並確保測試跑的是「安裝後的套件」（與 Docker 映像相同），而不是誤 import 到根目錄的程式碼。
+- **一個 `pyproject.toml`、一個 `uv.lock`**，各部署單元以 extras 區分依賴（例如 `agent`、`mcp`），映像只安裝自己需要的 extras。PoC 不使用 uv workspace 或多個專案，成本較低。
+- **邊界以規則維持，與目錄無關：**
+  - `dicominfra_mcp` 與 `dicominfra_agent` 不得 import `dicominfra`；`dicominfra_agent` 不得 import `dicominfra_mcp`（只透過 MCP 協定溝通）；`dicominfra` 不得 import 另外兩者。
+  - `dicominfra_mcp` 只呼叫公開 REST API，自己定義工具的資料模型，並以契約測試對照 `docs/contracts/`。
+  - 以測試檢查 import 方向（M5a、M5b 動工時加入），違反就讓 CI 失敗。
+- **日後要拆成獨立專案：** 因為邊界已被測試守住，只需要搬目錄並補上自己的 `pyproject.toml`，不必改程式碼。
+- CI 依路徑分工：`src/dicominfra_agent/**` 與 `src/dicominfra_mcp/**` 變動只跑各自的檢查；`docs/contracts/**` 變動全部都跑。測試目錄在第二個套件出現時再依套件分子目錄。
+- 代價：三個部署單元共用一份依賴解析，版本衝突時要一起解決。
 
-## MCP 規範版本
+## MCP SDK 與規範版本（2026-11-24 決定）
 
-MCP 的 Streamable HTTP 在 2026-07-28 的修訂中移除了 GET 串流端點與協定層的 session，並且不支援串流續接；
-較早的修訂（2025-03-26 到 2025-11-25）則有這些功能。因此 MCP 層只作為工具註冊表外的薄轉接，
-SDK 支援的協定版本在 M5a 前確認（見 `docs/assumptions.md` 的 E1），協定改變時只換轉接層。
+**決定：使用官方 `mcp` Python SDK v2，精確釘住版本；伺服器以 `MCPServer` 搭配 `stateless_http=True`、`json_response=True` 運行；Agent 端使用同一個 SDK 的 `Client`。**
+
+- **規範背景：** MCP 的 2026-07-28 修訂把協定改成無狀態：移除 `initialize` 握手與 `Mcp-Session-Id`，每個請求自成一體，任何伺服器實例都能處理。
+  官方 Python SDK v2 同時支援新舊協定版本，同一個端點兩種都回應。
+- **為什麼選官方 SDK：** 它支援新規範，宣告式 API 足夠簡單，沒有雲端綁定；自己實作協定的風險更高，因為規範在一年內改了兩次傳輸行為。
+  社群的獨立 `fastmcp` 套件我沒有做完整評估；因為官方 SDK 已提供同等的宣告式 API，所以不多引入一層依賴。
+- **已驗證（沙箱，Linux、Python 3.12、`mcp` 2.3.0）：** 無狀態加 JSON 回應的伺服器可啟動；以 2026-07-28 的標頭直接 POST 得到 `application/json` 回應且沒有 session 標頭；SDK 客戶端的 `list_tools` 與 `call_tool` 成功。
+  **未驗證：** 在你的 Mac 上、與舊版協定客戶端的互通、串流進度的行為。M5a 會把這個 spike 轉成契約測試。
+- **替換空間：** SDK 只出現在 `dicominfra_mcp` 的轉接層；工具本身是呼叫 REST API 的普通函式，登記在我們自己的工具註冊表。換 SDK 或協定版本只需要改轉接層。
+- **對設計的影響（與先前決定一致）：** 新規範沒有伺服器主動發起的請求，SDK 在無狀態模式下遇到 elicitation 之類的呼叫會直接失敗，因此「寫入核准在服務端」的設計是對的，不能依賴 MCP 的使用者確認。
+  以工具發出的明確代號（任務編號、提案編號）取代 session 狀態，也與本設計一致。
+- **風險：** v2 是大幅改寫的新版本，需精確釘住版本並在升級時重跑契約測試。
 
 ## 後果
 
